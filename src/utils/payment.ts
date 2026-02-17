@@ -14,12 +14,6 @@ export interface PaymentStatusResponse {
   success: boolean;
 }
 
-export interface PaymentReceiptResponse {
-  data: string;
-  sign: string;
-  success: boolean;
-}
-
 export interface DecodedCallbackData {
   payment_id: number;
   operation_id: number;
@@ -130,23 +124,6 @@ export const createPaymentStatusRequestBody = (
   return { data: dataBase64, sign };
 };
 
-export const createPaymentReceiptRequestBody = (
-  paymentId: string,
-  orderId: string,
-  config: PaymentConfig
-): { data: string; sign: string } => {
-  const dataObject = {
-    payment_id: paymentId,
-    order_id: orderId,
-  };
-
-  const dataJson = JSON.stringify(dataObject);
-  const dataBase64 = Buffer.from(dataJson).toString("base64");
-  const sign = createHmac("sha512", config.secretKey).update(dataBase64).digest("hex");
-
-  return { data: dataBase64, sign };
-};
-
 export const verifyResponseSignature = (data: string, sign: string, secretKey: string): void => {
   const calculatedSign = createHmac("sha512", secretKey).update(data).digest("hex");
   if (calculatedSign !== sign) {
@@ -212,20 +189,3 @@ export const sendPaymentRecurrentRequest = async (
   });
 };
 
-export const sendPaymentReceiptRequest = async (
-  config: PaymentConfig,
-  paymentId: string,
-  orderId: string
-): Promise<AxiosResponse<PaymentReceiptResponse>> => {
-  const token = Buffer.from(config.apiKey).toString("base64");
-  const requestBody = createPaymentReceiptRequestBody(paymentId, orderId, config);
-
-  return axios.get<any>(`${config.apiUrl}get-receipt`, {
-    data: requestBody,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    responseType: "arraybuffer",
-  });
-};

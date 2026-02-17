@@ -8,9 +8,7 @@ import {
   createUserWallet,
   depositUserWallet,
 } from "../../models/wallet.model";
-import { sendPaymentReceiptRequest } from "../../utils/payment";
 import redis from "../../utils/redis";
-import { uploadToBothBuckets } from "../../utils/s3.utils";
 import { mapPaymentStatus } from "../../utils/statusMapper";
 import {
   verifyResponseSignature,
@@ -268,29 +266,4 @@ export const walletService = {
     return transaction;
   },
 
-  async getReceipt(userId: number, payment_id: string, order_id: string) {
-    if (!paymentConfig.secretKey || !paymentConfig.apiKey || !paymentConfig.apiUrl) {
-      throw new Error("Missing required environment variables");
-    }
-
-    const transaction = await getTransactionByOrderId(order_id);
-    if (!transaction) {
-      throw Object.assign(new Error("Transaction not found"), { statusCode: 404 });
-    }
-
-    if (transaction.user_id != userId) {
-      throw Object.assign(new Error("Access denied: this transaction does not belong to you"), { statusCode: 403 });
-    }
-
-    const response = await sendPaymentReceiptRequest(paymentConfig, payment_id, order_id);
-
-    const pdfBuffer = Buffer.isBuffer(response.data)
-      ? response.data
-      : Buffer.from(response.data as any);
-
-    const filename = `${order_id}_${payment_id}.pdf`;
-    const receiptUrl = await uploadToBothBuckets("receipts", pdfBuffer, filename, "application/pdf");
-
-    return receiptUrl;
-  },
 };

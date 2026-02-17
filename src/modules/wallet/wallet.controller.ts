@@ -127,34 +127,3 @@ export async function callback(req: Request, res: Response): Promise<void> {
   }
 }
 
-export async function getReceipt(req: Request, res: Response): Promise<void> {
-  const userId = req.auth?.userId;
-  if (!userId) {
-    res.status(401).json({ error: { code: ERROR_CODES.BASE_INVALID_ACCESS_TOKEN, message: "Invalid user ID" } });
-    return;
-  }
-
-  const { payment_id, order_id } = req.body;
-
-  if (!payment_id || !order_id) {
-    res.status(400).json({ success: false, error: { code: ERROR_CODES.SERVER_ERROR, message: "Missing required parameters: payment_id and order_id" } });
-    return;
-  }
-
-  try {
-    const receiptUrl = await walletService.getReceipt(userId, payment_id, order_id);
-    res.json({ success: true, url: receiptUrl, message: "Receipt URL generated successfully" });
-  } catch (error: any) {
-    const status = error.statusCode || 500;
-    console.error("Ошибка получения квитанции:", (error as Error).message);
-    if (status === 404) {
-      res.status(404).json({ success: false, message: "Receipt not found" });
-    } else if (status === 403) {
-      res.status(403).json({ success: false, message: (error as Error).message });
-    } else if ((error as any).response?.status === 404) {
-      res.status(404).json({ success: false, message: "Receipt not found" });
-    } else {
-      res.status(500).json({ success: false, message: "Ошибка получения квитанции", error: (error as Error).message });
-    }
-  }
-}

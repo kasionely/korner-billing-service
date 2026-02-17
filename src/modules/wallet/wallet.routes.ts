@@ -11,6 +11,5 @@ router.get("/transactions", authMiddleware, walletController.getTransactions);
 router.post("/create", authMiddleware, walletController.createWallet);
 router.post("/top-up", authMiddleware, walletController.topUp);
 router.post("/callback", walletController.callback);
-router.post("/get-receipt", authMiddleware, walletController.getReceipt);
 
 export default router;

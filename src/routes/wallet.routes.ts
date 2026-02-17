@@ -12,9 +12,7 @@ import {
   depositUserWallet,
 } from "../models/wallet.model";
 import { ERROR_CODES } from "../utils/errorCodes";
-import { sendPaymentReceiptRequest } from "../utils/payment";
 import redis from "../utils/redis";
-import { uploadToBothBuckets } from "../utils/s3.utils";
 import { mapPaymentStatus } from "../utils/statusMapper";
 import {
   verifyResponseSignature,
@@ -520,89 +518,6 @@ router.post("/callback", async (req: Request, res: Response) => {
     return res.status(500).json({
       message: "Something went wrong",
       error: ERROR_CODES.SERVER_ERROR,
-    });
-  }
-});
-
-router.post("/get-receipt", authMiddleware, async (req: Request, res: Response) => {
-  const userId = req.auth?.userId;
-  const payment_id = req.body.payment_id as string;
-  const order_id = req.body.order_id as string;
-
-  if (!userId) {
-    return res.status(401).json({
-      error: {
-        code: ERROR_CODES.BASE_INVALID_ACCESS_TOKEN,
-        message: "Invalid user ID",
-      },
-    });
-  }
-
-  if (!payment_id || !order_id) {
-    return res.status(400).json({
-      success: false,
-      error: {
-        code: ERROR_CODES.SERVER_ERROR,
-        message: "Missing required parameters: payment_id and order_id",
-      },
-    });
-  }
-
-  try {
-    // Проверка окружения
-    if (!paymentConfig.secretKey || !paymentConfig.apiKey || !paymentConfig.apiUrl) {
-      throw new Error("Missing required environment variables");
-    }
-
-    // Проверка что транзакция принадлежит пользователю
-    const transaction = await getTransactionByOrderId(order_id);
-    if (!transaction) {
-      return res.status(404).json({
-        success: false,
-        message: "Transaction not found",
-      });
-    }
-
-    if (transaction.user_id != userId) {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied: this transaction does not belong to you",
-      });
-    }
-
-    const response = await sendPaymentReceiptRequest(paymentConfig, payment_id, order_id);
-
-    const pdfBuffer = Buffer.isBuffer(response.data)
-      ? response.data
-      : Buffer.from(response.data as any);
-
-    const filename = `${order_id}_${payment_id}.pdf`;
-    const receiptUrl = await uploadToBothBuckets(
-      "receipts",
-      pdfBuffer,
-      filename,
-      "application/pdf"
-    );
-
-    return res.json({
-      success: true,
-      url: receiptUrl,
-      message: "Receipt URL generated successfully",
-    });
-  } catch (error: any) {
-    console.error("Ошибка получения квитанции:", (error as Error).message);
-
-    if (error.response?.status === 404) {
-      return res.status(404).json({
-        success: false,
-        message: "Receipt not found",
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: "Ошибка получения квитанции",
-      error: (error as Error).message,
     });
   }
 });

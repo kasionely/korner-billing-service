@@ -16,7 +16,7 @@ interface CreateTransactionParams {
   subscriptionPriceId?: number;
 }
 
-interface Transaction {
+export interface Transaction {
   id: number;
   user_id: number;
   currency_id: number;
