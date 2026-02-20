@@ -25,12 +25,12 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", service: "korner-billing-service" });
 });
 
-app.use("/api/v1/payment", paymentRoutes);
-app.use("/api/v1/wallet", walletRoutes);
-app.use("/api/v1/subscription", subscriptionRoutes);
-app.use("/api/v1/fee", feeRoutes);
+app.use("/api/payment", paymentRoutes);
+app.use("/api/wallet", walletRoutes);
+app.use("/api/subscription", subscriptionRoutes);
+app.use("/api/fee", feeRoutes);
 app.use("/api/v1/payout-requests", payoutRequestsRoutes);
-app.use("/api/v1/cards", cardRoutes);
+app.use("/api/cards", cardRoutes);
 
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error("Unhandled error:", err);
