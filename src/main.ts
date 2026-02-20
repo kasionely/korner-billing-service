@@ -42,7 +42,7 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
   });
 });
 
-app.listen(PORT, () => {
+app.listen(Number(PORT), "::", () => {
   console.log(`korner-billing-service running on port ${PORT}`);
   subscriptionRenewalService.start();
 });
