@@ -16,7 +16,24 @@ import { subscriptionRenewalService } from "./services/subscriptionRenewal.servi
 const app = express();
 const PORT = process.env.PORT || 3002;
 
-app.use(cors());
+const allowedOrigins = [
+  "https://korner.pro",
+  "https://korner.lol",
+  "https://arsentomsky.indrive.com",
+  "http://localhost:6969",
+];
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
