@@ -43,7 +43,8 @@ export const getUserByToken = async (token: string): Promise<UserData | null> =>
         Authorization: `Bearer ${token}`,
       },
     });
-    return response.data;
+    // Main-service returns { user: { id, email, ... } }
+    return response.data.user ?? response.data;
   } catch (error) {
     console.error("Error fetching user by token from main service:", error);
     return null;
@@ -53,7 +54,8 @@ export const getUserByToken = async (token: string): Promise<UserData | null> =>
 export const getBarById = async (barId: string): Promise<BarData | null> => {
   try {
     const response = await mainServiceAxios.get(`/internal/bars/${barId}`);
-    return response.data;
+    // Main-service returns { bar: { id, ... } }
+    return response.data.bar ?? response.data;
   } catch (error) {
     console.error(`Error fetching bar ${barId} from main service:`, error);
     return null;
@@ -63,7 +65,8 @@ export const getBarById = async (barId: string): Promise<BarData | null> => {
 export const getProfileById = async (profileId: string): Promise<ProfileData | null> => {
   try {
     const response = await mainServiceAxios.get(`/internal/profiles/${profileId}`);
-    return response.data;
+    // Main-service returns { profile: { id, ... } }
+    return response.data.profile ?? response.data;
   } catch (error) {
     console.error(`Error fetching profile ${profileId} from main service:`, error);
     return null;
