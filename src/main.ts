@@ -7,6 +7,7 @@ dotenv.config();
 
 import cardRoutes from "./modules/card/card.routes";
 import feeRoutes from "./modules/fee/fee.routes";
+import internalRoutes from "./modules/internal/internal.routes";
 import paymentRoutes from "./modules/payment/payment.routes";
 import payoutRequestsRoutes from "./modules/payout-requests/payout-requests.routes";
 import subscriptionRoutes from "./modules/subscription/subscription.routes";
@@ -42,6 +43,7 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", service: "korner-billing-service" });
 });
 
+app.use("/internal", internalRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/subscription", subscriptionRoutes);
